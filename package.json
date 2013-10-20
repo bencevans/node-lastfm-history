@@ -1,7 +1,7 @@
 {
   "name": "lastfm-history",
   "version": "0.1.0",
-  "description": "ERROR: No README.md file found!",
+  "description": "Provides an EventEmitter interface to gaining Last.fm scrobble history.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
