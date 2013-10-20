@@ -10,7 +10,7 @@ Provides an EventEmitter interface to gaining Last.fm scrobble history.
 
 ```javascript
 ver getHistory = require('lastfm-history');s
-var worker = getHistory('bencevans', 'b2093e04f3b01c29f6d01d7b9109579f');
+var worker = getHistory('bencevans', 'API_KEY');
 
 worker.on('page', function(tracks, meta) {
   console.log(tracks.length + ' scrobbles just pulled');
