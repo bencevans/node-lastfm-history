@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": "",
+  "repository": "git@github.com:bencevans/node-lastfm-history.git",
   "author": "Ben Evans <ben@bensbit.co.uk> (http://bensbit.co.uk)",
   "license": "MIT",
   "dependencies": {
