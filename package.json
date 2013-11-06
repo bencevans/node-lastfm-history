@@ -10,6 +10,7 @@
   "author": "Ben Evans <ben@bensbit.co.uk> (http://bensbit.co.uk)",
   "license": "MIT",
   "dependencies": {
-    "request": "~2.27.0"
+    "request": "~2.27.0",
+    "async": "~0.2.9"
   }
 }
