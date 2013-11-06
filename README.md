@@ -9,7 +9,7 @@ Provides an EventEmitter interface to gaining Last.fm scrobble history.
 ## Example
 
 ```javascript
-ver getHistory = require('lastfm-history');s
+var getHistory = require('lastfm-history');
 var worker = getHistory('bencevans', 'API_KEY');
 
 worker.on('page', function(tracks, meta) {
