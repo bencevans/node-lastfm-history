@@ -152,3 +152,4 @@ var createInstance = function(username, apiKey, concurrency) {
  */
 
 module.exports = createInstance;
+module.exports.History = History;
