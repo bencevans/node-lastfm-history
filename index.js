@@ -3,10 +3,11 @@
  * Module Dependencies
  */
 
-var request = require('request');
-var util = require('util');
+var request      = require('request');
+var util         = require('util');
 var EventEmitter = require('events').EventEmitter;
-var async = require('async');
+var async        = require('async');
+var qs           = require('querystring');
 
 /**
  * Retrieve Last.fm Scrobble History
@@ -14,11 +15,14 @@ var async = require('async');
  * @param  {String} apiKey   Last.gm API key
  * @return {EventEmitter}    listen on events 'page', 'error' and 'complete'
  */
-var getHistory = function(username, apiKey, concurrency) {
+var History = function(options) {
 
-  concurrency = concurrency || 1;
+  this.options = options || options;
+  this.options.concurrency = concurrency || 1;
 
-  var em = new EventEmitter();
+  if(!options.apiKey) {
+    return this.emit('error', new Error('No apiKey provided'));
+  }
 
   function getPage(pageNo, callback) {
     request({
@@ -57,11 +61,33 @@ var getHistory = function(username, apiKey, concurrency) {
 
   getPage(1);
 
-  return em;
+};
+util.inherits(History, EventEmitter);
+
+/**
+ * Helper to create an instance of History
+ * @param  {Object | Sting} username    An options object can be specified instead. Else it's your Last.fm username.
+ * @param  {String} apiKey              API key provided by Last.fm developer centre.
+ * @param  {Number} concurrency         Default=1 How many "workers" should be collecting pages of data.
+ * @return {History}
+ */
+var createInstance = function(username, apiKey, concurrency) {
+
+  var options = {};
+
+  if(typeof username === 'object') {
+    options = username;
+  } else {
+    options.username = username;
+    options.apiKey   = apiKey;
+    options.concurrency = concurrency;
+  }
+
+  return new History(options);
 };
 
 /**
  * Exports
  */
 
-module.exports = getHistory;
+module.exports = createInstance;
