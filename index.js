@@ -13,7 +13,7 @@ var url          = require('url');
 /**
  * Retrieve Last.fm Scrobble History
  * @param  {String} username username of last.fm history desired
- * @param  {String} apiKey   Last.gm API key
+ * @param  {String} apiKey   Last.fm API key
  * @return {EventEmitter}    listen on events 'page', 'error' and 'complete'
  */
 var History = function(options) {
@@ -30,6 +30,12 @@ var History = function(options) {
   this.worker = function(pageNo, callback) {
     this.getPageAndParseBody(function(err, response) {
       var i;
+
+      if(err) {
+        return self.emit('error', err);
+      }
+
+      self.emit('page', response);
 
       if(firstRun) { // Queue up rest of pages
         for (i = 2; i < response.recenttracks['@attr'].totalPages; i++) {

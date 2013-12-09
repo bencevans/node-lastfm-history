@@ -35,6 +35,7 @@ describe('lastfm-history', function() {
 
   describe('#History', function() {
 
+    it('should emit a page event');
     it('should emit a scrobble event');
     it('should emit a complete event');
 
