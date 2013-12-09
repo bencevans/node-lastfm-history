@@ -1,3 +1,4 @@
+'use strict';
 
 /**
  * Module Dependencies
@@ -7,7 +8,7 @@ var request      = require('request');
 var util         = require('util');
 var EventEmitter = require('events').EventEmitter;
 var async        = require('async');
-var qs           = require('querystring');
+var url          = require('url');
 
 /**
  * Retrieve Last.fm Scrobble History
@@ -16,53 +17,113 @@ var qs           = require('querystring');
  * @return {EventEmitter}    listen on events 'page', 'error' and 'complete'
  */
 var History = function(options) {
+  var self = this;
+  var firstRun = true;
 
   this.options = options || options;
-  this.options.concurrency = concurrency || 1;
+  this.options.concurrency = this.options.concurrency || 1;
 
   if(!options.apiKey) {
     return this.emit('error', new Error('No apiKey provided'));
   }
 
-  function getPage(pageNo, callback) {
-    request({
-        json: true,
-        url: 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + username + '&api_key=' + apiKey + '&format=json&limit=200&page=' + pageNo
-      }, function(err, res, body) {
-        if(err) return em.emit('error', err);
+  this.worker = function(pageNo, callback) {
+    this.getPageAndParseBody(function(err, response) {
+      var i;
 
-        try {
-          // Parse page and track details to numbers
-          body.recenttracks['@attr'].page = parseInt(body.recenttracks['@attr'].page, 10);
-          body.recenttracks['@attr'].perPage = parseInt(body.recenttracks['@attr'].perPage, 10);
-          body.recenttracks['@attr'].totalPages = parseInt(body.recenttracks['@attr'].totalPages, 10);
-          body.recenttracks['@attr'].total = parseInt(body.recenttracks['@attr'].total, 10);
-          em.emit('page', body.recenttracks.track, body.recenttracks['@attr']);
-        } catch (e) {
-          e.statusCode = res.statusCode;
-          e.body = body;
-          em.emit('error', e);
+      if(firstRun) { // Queue up rest of pages
+        for (i = 2; i < response.recenttracks['@attr'].totalPages; i++) {
+          self.queue.push(i);
         }
+        firstRun = false;
+      }
 
+      for (i = response.tracks.length - 1; i >= 0; i--) {
+        self.emit('scrobble', response.tracks[i]);
+      }
 
-        if(pageNo === 1) {
-          var q = async.queue(getPage, concurrency);
-          for (var i = 2; i < body.recenttracks['@attr'].totalPages; i++) {
-            q.push(i);
-          }
-          q.drain = function() {
-            em.emit('complete');
-          };
-        } else {
-          callback();
-        }
-      });
-  }
+      return callback();
 
-  getPage(1);
+    });
+  };
+
+  this.queue = async.queue(this.worker, options.concurrency);
+
+  this.queue.drain = function() {
+    self.emit('complete');
+  };
 
 };
 util.inherits(History, EventEmitter);
+
+/**
+ * Generates URL for API Call
+ * @param  {Number} pageNo
+ * @return {String}        URL to be requested
+ */
+History.prototype.getPageUrl = function(pageNo) {
+  return url.stringify({
+    protocol : 'http:',
+    host     : 'ws.audioscrobbler.com',
+    path     : '/2.0',
+    query    : {
+      method   : 'user.getrecenttracks',
+      username : this.options.username,
+      api_key  : this.options.apiKey,
+      format   : 'json',
+      limit    : 200,
+      page     : pageNo
+    }
+  });
+};
+
+/**
+ * Requests a given page of a users scrobble history
+ * @param  {Number}   pageNo   Page Number
+ * @param  {Function} callback (err, body)
+ * @return {Void}
+ */
+History.prototype.getPage = function(pageNo, callback) {
+  request({
+    json : true,
+    url  : this.getPageUrl(pageNo)
+  }, function(err, res, body) {
+    callback(err, body);
+  });
+};
+
+/**
+ * Parse Last.FM's response into something more JavaScript friendly
+ * @param  {Object} body JSON parsed body response from API
+ * @return {Object}      {tracks: [...], '@attr': { ... }}
+ */
+History.prototype.parseBody = function(body) {
+  body.recenttracks['@attr'].page = parseInt(body.recenttracks['@attr'].page, 10);
+  body.recenttracks['@attr'].perPage = parseInt(body.recenttracks['@attr'].perPage, 10);
+  body.recenttracks['@attr'].totalPages = parseInt(body.recenttracks['@attr'].totalPages, 10);
+  body.recenttracks['@attr'].total = parseInt(body.recenttracks['@attr'].total, 10);
+  return { tracks: body.recenttracks.track, '@attr': body.recenttracks['@attr'] };
+};
+
+/**
+ * A psuedo function for calling getPage and parseBody
+ * @param  {Number}   pageNo   Page Number
+ * @param  {Function} callback (err, res)
+ * @return {Void}
+ */
+History.prototype.getPageAndParseBody = function(pageNo, callback) {
+  var self = this;
+  this.getPage(pageNo, function(err, body) {
+    if(err) {
+      return callback(err);
+    }
+    try {
+      callback(null, self.parseBody(body));
+    } catch (e) {
+      callback(e);
+    }
+  });
+};
 
 /**
  * Helper to create an instance of History
