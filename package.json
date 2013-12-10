@@ -1,6 +1,6 @@
 {
   "name": "lastfm-history",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "Provides an EventEmitter interface to gaining Last.fm scrobble history.",
   "main": "index.js",
   "scripts": {
