@@ -28,7 +28,7 @@ var History = function(options) {
   }
 
   this.worker = function(pageNo, callback) {
-    this.getPageAndParseBody(function(err, response) {
+    self.getPageAndParseBody(pageNo, function(err, response) {
       var i;
 
       if(err) {
@@ -38,7 +38,7 @@ var History = function(options) {
       self.emit('page', response);
 
       if(firstRun) { // Queue up rest of pages
-        for (i = 2; i < response.recenttracks['@attr'].totalPages; i++) {
+        for (i = 2; i < response['@attr'].totalPages; i++) {
           self.queue.push(i);
         }
         firstRun = false;
@@ -51,6 +51,7 @@ var History = function(options) {
       return callback();
 
     });
+
   };
 
   this.queue = async.queue(this.worker, options.concurrency);
@@ -58,6 +59,8 @@ var History = function(options) {
   this.queue.drain = function() {
     self.emit('complete');
   };
+
+  this.queue.push(1); 
 
 };
 util.inherits(History, EventEmitter);
@@ -68,13 +71,13 @@ util.inherits(History, EventEmitter);
  * @return {String}        URL to be requested
  */
 History.prototype.getPageUrl = function(pageNo) {
-  return url.stringify({
+  return url.format({
     protocol : 'http:',
     host     : 'ws.audioscrobbler.com',
-    path     : '/2.0',
+    pathname     : '/2.0',
     query    : {
       method   : 'user.getrecenttracks',
-      username : this.options.username,
+      user : this.options.username,
       api_key  : this.options.apiKey,
       format   : 'json',
       limit    : 200,
@@ -104,6 +107,7 @@ History.prototype.getPage = function(pageNo, callback) {
  * @return {Object}      {tracks: [...], '@attr': { ... }}
  */
 History.prototype.parseBody = function(body) {
+  console.log(body.recenttracks['@attr']);
   body.recenttracks['@attr'].page = parseInt(body.recenttracks['@attr'].page, 10);
   body.recenttracks['@attr'].perPage = parseInt(body.recenttracks['@attr'].perPage, 10);
   body.recenttracks['@attr'].totalPages = parseInt(body.recenttracks['@attr'].totalPages, 10);
