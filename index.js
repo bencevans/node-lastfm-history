@@ -38,7 +38,7 @@ var History = function(options) {
       self.emit('page', response);
 
       if(firstRun) { // Queue up rest of pages
-        for (i = 2; i < response['@attr'].totalPages; i++) {
+        for (i = 2; i < response['@attr'].totalPages + 1; i++) {
           self.queue.push(i);
         }
         firstRun = false;
@@ -73,7 +73,7 @@ util.inherits(History, EventEmitter);
  * @return {String}        URL to be requested
  */
 History.prototype.getPageUrl = function(pageNo) {
-  return url.format({
+  var options = {
     protocol : 'http:',
     host     : 'ws.audioscrobbler.com',
     pathname     : '/2.0',
@@ -85,7 +85,14 @@ History.prototype.getPageUrl = function(pageNo) {
       limit    : 200,
       page     : pageNo
     }
-  });
+  };
+  if(this.options.from && this.options.from instanceof Date) {
+    options.query.from = Math.round(this.options.from.getTime() / 1000);
+  }
+  if(this.options.to && this.options.to instanceof Date) {
+    options.query.to   = Math.round(this.options.to.getTime() / 1000);
+  }
+  return url.format(options);
 };
 
 /**
