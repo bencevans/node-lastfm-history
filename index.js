@@ -123,6 +123,11 @@ History.prototype.parseBody = function(body) {
     throw new Error(body.error + ': ' + body.message );
   }
 
+  body.recenttracks.track = body.recenttracks.track.map(function(scrobble) {
+    console.log(scrobble);
+    scrobble.date = scrobble.date ? new Date(parseInt(scrobble.date.uts) * 1000) : new Date();
+    return scrobble;
+  });
   body.recenttracks['@attr'].page = parseInt(body.recenttracks['@attr'].page, 10);
   body.recenttracks['@attr'].perPage = parseInt(body.recenttracks['@attr'].perPage, 10);
   body.recenttracks['@attr'].totalPages = parseInt(body.recenttracks['@attr'].totalPages, 10);
