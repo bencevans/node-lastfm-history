@@ -2,6 +2,8 @@
 
 Provides an EventEmitter interface to gaining Last.fm scrobble history.
 
+[![Build Status](https://travis-ci.org/bencevans/node-lastfm-history.png?branch=master)](https://travis-ci.org/bencevans/node-lastfm-history)
+
 ## Installation
 
 `npm install lastfm-history`
