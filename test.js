@@ -35,7 +35,7 @@ describe('lastfm-history', function() {
   describe('#History', function() {
     var scrobbleEmitter;
 
-    this.timeout(10000);
+    this.timeout(30000);
 
     function justCall(done) {
       return function() {
@@ -46,7 +46,9 @@ describe('lastfm-history', function() {
     before(function() {
       scrobbleEmitter = getScrobbles({
         username: 'bencevans',
-        apiKey:   process.env.LAST_FM_KEY
+        apiKey  : process.env.LAST_FM_KEY,
+        from    : new Date('11/3/13 00:00'),
+        to      : new Date('11/10/13 00:00')
       });
     });
 
