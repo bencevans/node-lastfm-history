@@ -35,6 +35,8 @@ describe('lastfm-history', function() {
   describe('#History', function() {
     var scrobbleEmitter;
 
+    this.timeout(10000);
+
     function justCall(done) {
       return function() {
         done();
