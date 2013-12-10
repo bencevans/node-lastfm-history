@@ -6,7 +6,6 @@ var getScrobbles = require('./');
 describe('lastfm-history', function() {
 
   describe('#createInstance()', function() {
-    var scrobbleEmitter;
 
     it('should throw an error when missing a apiKey', function() {
       assert.throws(function() {
@@ -16,28 +15,50 @@ describe('lastfm-history', function() {
         getScrobbles({});
       });
       assert.throws(function() {
-        getScrobbles('bencevans', null, 1);
+        getScrobbles('bencevans', null, 0);
       });
     });
     it('should accept an options object', function() {
       var options = {
         username   : 'bencevans',
         apiKey     : 'hufdpoajfdajwepj',
-        concurrency: 1
-      }
+        concurrency: 0
+      };
       assert.deepEqual(getScrobbles(options).options, options);
     });
     it('should return an instance of History', function() {
-      assert.ok(getScrobbles({ apiKey:'123123', username: 'oij' }) instanceof getScrobbles.History);
+      assert.ok(getScrobbles({ apiKey:'123123', username: 'oij', concurrency: 0 }) instanceof getScrobbles.History);
     });
 
   });
 
   describe('#History', function() {
+    var scrobbleEmitter;
 
-    it('should emit a page event');
-    it('should emit a scrobble event');
-    it('should emit a complete event');
+    function justCall(done) {
+      return function() {
+        done();
+      };
+    }
+
+    before(function() {
+      scrobbleEmitter = getScrobbles({
+        username: 'bencevans',
+        apiKey:   process.env.LAST_FM_KEY
+      });
+    });
+
+    it('should emit a page event', function(done) {
+      scrobbleEmitter.once('page', justCall(done));
+    });
+
+    it('should emit a scrobble event', function(done) {
+      scrobbleEmitter.once('scrobble', justCall(done));
+    });
+
+    it('should emit a complete event', function(done) {
+      scrobbleEmitter.once('complete', justCall(done));
+    });
 
   });
 

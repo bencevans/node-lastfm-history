@@ -21,7 +21,7 @@ var History = function(options) {
   var firstRun = true;
 
   this.options = options || options;
-  this.options.concurrency = this.options.concurrency || 1;
+  this.options.concurrency = (typeof this.options.concurrency !== 'undefined') ? this.options.concurrency : 1;
 
   if(!options.apiKey) {
     return this.emit('error', new Error('No apiKey provided'));
@@ -60,7 +60,9 @@ var History = function(options) {
     self.emit('complete');
   };
 
-  this.queue.push(1); 
+  if(this.options.concurrency !== 0) {
+    this.queue.push(1);
+  }
 
 };
 util.inherits(History, EventEmitter);
@@ -107,7 +109,13 @@ History.prototype.getPage = function(pageNo, callback) {
  * @return {Object}      {tracks: [...], '@attr': { ... }}
  */
 History.prototype.parseBody = function(body) {
-  console.log(body.recenttracks['@attr']);
+
+  if(!body) {
+    throw new Error('No body response to parse');
+  } else if(body.error) {
+    throw new Error(body.error + ': ' + body.message );
+  }
+
   body.recenttracks['@attr'].page = parseInt(body.recenttracks['@attr'].page, 10);
   body.recenttracks['@attr'].perPage = parseInt(body.recenttracks['@attr'].perPage, 10);
   body.recenttracks['@attr'].totalPages = parseInt(body.recenttracks['@attr'].totalPages, 10);
