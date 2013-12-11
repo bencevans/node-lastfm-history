@@ -124,7 +124,6 @@ History.prototype.parseBody = function(body) {
   }
 
   body.recenttracks.track = body.recenttracks.track.map(function(scrobble) {
-    console.log(scrobble);
     scrobble.date = scrobble.date ? new Date(parseInt(scrobble.date.uts) * 1000) : new Date();
     return scrobble;
   });
