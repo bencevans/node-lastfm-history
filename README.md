@@ -1,18 +1,22 @@
-# node-lastfm-history
+# lastfm-history [![Build Status](https://travis-ci.org/bencevans/node-lastfm-history.png?branch=master)](https://travis-ci.org/bencevans/node-lastfm-history)
 
-Provides an EventEmitter interface to gaining Last.fm scrobble history.
+> Provides an EventEmitter interface to gaining Last.fm scrobble history.
 
-[![Build Status](https://travis-ci.org/bencevans/node-lastfm-history.png?branch=master)](https://travis-ci.org/bencevans/node-lastfm-history)
+
 
 ## Installation
 
-`npm install lastfm-history`
+    $ npm install lastfm-history
 
 ## Example
 
 ```javascript
 var getHistory = require('lastfm-history');
-var worker = getHistory('bencevans', 'API_KEY');
+
+var user = 'bencevans';
+var apiKey = process.env.API_KEY;
+
+var worker = getHistory(user, apiKey);
 
 worker.on('page', function(tracks, meta) {
   console.log(tracks.length + ' scrobbles just pulled');
@@ -29,3 +33,7 @@ worker.on('error', function(err) {
   console.log('err:', err);
 });
 ```
+
+## Licence
+
+MIT © [Ben Evans](http://bensbit.co.uk)
